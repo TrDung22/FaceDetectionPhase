@@ -1,0 +1,12 @@
+numpy == 1.26.4
+torch == 2.5.0
+opencv_python == 4.10.0.84
+torchvision == 0.20.0
+typing == 3.7.4.3
+torchstat == 0.0.7
+torchsummary == 1.5.1
+ptflops == 0.7.4
+matplotlib == 3.9.2
+onnx == 1.17.0
+onnxruntime == 1.19.2
+tensorflow == 2.17.0
