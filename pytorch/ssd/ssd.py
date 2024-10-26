@@ -5,7 +5,6 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 from pytorch.utils import box_utils
 
 GraphPath = namedtuple("GraphPath", ['s0', 'name', 's1'])
@@ -27,6 +26,8 @@ class SSD(nn.Module):
         self.regression_headers = regression_headers
         self.is_test = is_test
         self.config = config
+        self.quant = torch.ao.quantization.QuantStub()
+        self.dequant = torch.ao.quantization.DeQuantStub()
 
         # register layers in source_layer_indexes by adding them to a module list
         self.source_layer_add_ons = nn.ModuleList([t[1] for t in source_layer_indexes
@@ -40,6 +41,7 @@ class SSD(nn.Module):
             self.priors = config.priors.to(self.device)
 
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        x = self.quant(x)
         confidences = []
         locations = []
         start_layer_index = 0
@@ -88,7 +90,9 @@ class SSD(nn.Module):
             locations.append(location)
 
         confidences = torch.cat(confidences, 1)
+        confidences = self.dequant(confidences)
         locations = torch.cat(locations, 1)
+        locations = self.dequant(locations)
 
         if self.is_test:
             confidences = F.softmax(confidences, dim=2)

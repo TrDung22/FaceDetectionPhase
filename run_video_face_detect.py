@@ -29,7 +29,7 @@ define_img_size(input_img_size)  # must put define_img_size() before 'import cre
 from pytorch.ssd.mb_tiny_fd import create_mb_tiny_fd, create_mb_tiny_fd_predictor
 from pytorch.utils.misc import Timer
 
-label_path = "./models/voc-model-labels.txt"
+label_path = "ckpt/voc-model-labels.txt"
 
 # cap = cv2.VideoCapture(args.video_path)  # capture from video
 cap = cv2.VideoCapture(0)  # capture from camera
@@ -40,7 +40,7 @@ test_device = args.test_device
 
 candidate_size = args.candidate_size
 threshold = args.threshold
-model_path = "models/pretrained/version-slim-320.pth"
+model_path = "ckpt/pretrained/version-slim-320.pth"
 net = create_mb_tiny_fd(len(class_names), is_test=True, device=test_device)
 predictor = create_mb_tiny_fd_predictor(net, candidate_size=candidate_size, device=test_device)
 

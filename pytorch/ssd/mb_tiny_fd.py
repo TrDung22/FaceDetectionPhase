@@ -1,5 +1,6 @@
 from torch.nn import Conv2d, Sequential, ModuleList, ReLU
-
+import torch.nn as nn
+from torch.quantization import fuse_modules
 from pytorch.nn.mb_tiny import Mb_Tiny
 from pytorch.ssd.config import fd_config as config
 from pytorch.ssd.predictor import Predictor
@@ -62,3 +63,51 @@ def create_mb_tiny_fd_predictor(net, candidate_size=200, nms_method=None, sigma=
                           sigma=sigma,
                           device=device)
     return predictor
+
+def fuse_model(model):
+    """
+    Fuses Conv2d, BatchNorm2d và ReLU modules trong mô hình SSD để chuẩn bị cho post-training quantization.
+
+    Args:
+        model (nn.Module): Mô hình SSD cần thực hiện fusion.
+
+    Returns:
+        nn.Module: Mô hình sau khi đã thực hiện fusion các lớp.
+    """
+    # Fusing layers trong base_net_model
+    for module in model.base_net:
+        if isinstance(module, nn.Sequential):
+            if len(module) == 3:
+                # conv_bn block: Conv2d + BatchNorm2d + ReLU
+                fuse_modules(module, ['0', '1', '2'], inplace=True)
+            elif len(module) == 6:
+                # conv_dw block: Conv2d + BatchNorm2d + ReLU + Conv2d + BatchNorm2d + ReLU
+                fuse_modules(module, ['0', '1', '2'], inplace=True)
+                fuse_modules(module, ['3', '4', '5'], inplace=True)
+
+    # Fusing layers trong extras
+    for extra in model.extras:
+        if isinstance(extra, nn.Sequential):
+            # SeperableConv2d: Conv2d + ReLU + Conv2d
+            # Chỉ fuse Conv2d và ReLU đầu tiên
+            if len(extra) >= 2:
+                fuse_modules(extra, ['0', '1'], inplace=True)
+
+    # Fusing layers trong classification_headers
+    for header in model.classification_headers:
+        if isinstance(header, nn.Sequential):
+            # SeperableConv2d: Conv2d + ReLU + Conv2d
+            # Chỉ fuse Conv2d và ReLU đầu tiên
+            if len(header) >= 2:
+                fuse_modules(header, ['0', '1'], inplace=True)
+
+    # Fusing layers trong regression_headers
+    for header in model.regression_headers:
+        if isinstance(header, nn.Sequential):
+            # SeperableConv2d: Conv2d + ReLU + Conv2d hoặc chỉ Conv2d + ReLU
+            # Chỉ fuse Conv2d và ReLU đầu tiên nếu có
+            if len(header) >= 2:
+                if isinstance(header[1], nn.ReLU):
+                    fuse_modules(header, ['0', '1'], inplace=True)
+
+    return model

@@ -17,7 +17,7 @@ def main():
     base_channel = 8 * 2
     num_classes = 2
 
-    torch_path = args.pytorch_model or "/home/trdung/Documents/BoschPrj/lightFaceDetectModel/models/pretrained/version-slim-320.pth"
+    torch_path = args.pytorch_model or "/home/trdung/Documents/BoschPrj/lightFaceDetectModel/ckpt/pretrained/version-slim-320.pth"
     mapping_table = "mapping_tables/slim_320.json"
     model = create_slim_net(input_shape, base_channel, num_classes, post_processing=args.postprocess)
 

@@ -1,1 +1,5 @@
 /.idea
+evaluate/build
+evaluate/evaluationPytorch128Quantize
+evaluate/bbox.cpython-312-x86_64-linux-gnu.so
+evaluate/box_overlaps.c
