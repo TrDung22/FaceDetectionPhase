@@ -229,7 +229,7 @@ def evaluation(predDir, gtDir):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', '--pred', default="/home/trdung/Documents/BoschPrj/lightFaceDetectModel/evaluate/evaluationTflite128postQuant")
+    parser.add_argument('-p', '--pred', default="/home/trdung/Documents/BoschPrj/FaceDetectionQuantized/evaluate/evaluationPytorch128Quantize/JPEGImages")
     parser.add_argument('-g', '--gt', default='/home/trdung/Documents/BoschPrj/00_EDABK_Face_labels/VOCFormat/Annotations')
     args = parser.parse_args()
     evaluation(args.pred, args.gt)
