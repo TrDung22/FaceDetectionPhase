@@ -2,7 +2,7 @@ A place to store your models.
 
 ./pretrained:
     version-slim-320.pth : train with img input size 320x240
-    128_post_quant.pth: post-training quantized with input size 128x96
+    128_post_quant.pth: post-training quantized with input size 128x96test_code
 ./onnx
     version-slim-320.onnx                        :version-slim/ train with 320x240/ with    postprocessing
     version-slim-320_simplified.onnx             :version-slim/ train with 320x240/ without postprocessing /for ncnn & mnn

@@ -12,7 +12,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--save_dir', default="export_models/128.keras", type=str,
                     help='Path to folder of exported save model')
 parser.add_argument('--out', default="export_models/128_post_quant.tflite", type=str)
-parser.add_argument('--quantize_int8', action="store_true")
 parser.add_argument('--repr_data', default='/home/trdung/Documents/BoschPrj/00_EDABK_Face_labels/VOCFormat/JPEGImages',
                     type=str, help='Path to folder of data for quantization calibration')
 args = parser.parse_args()
@@ -55,14 +54,12 @@ def main():
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
     print("Type of model:", type(args.save_dir))
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
-    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS,
-                                           tf.lite.OpsSet.SELECT_TF_OPS]
-
-    if args.quantize_int8:
-        if args.repr_data is None:
-            raise Exception("repr_data must be provided to fully quantize the model")
-        converter.representative_dataset = representative_dataset_generator
-        converter.inference_input_type = tf.int8
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+    if args.repr_data is None:
+        raise Exception("repr_data must be provided to fully quantize the model")
+    converter.representative_dataset = representative_dataset_generator
+    converter.inference_input_type = tf.uint8
+    converter.inference_output_type = tf.uint8
 
     tflite_model = converter.convert()
     open(args.out, "wb").write(tflite_model)
@@ -87,7 +84,7 @@ def test():
     # Convert to int8 input tensors if model is quantized
     params = input_details[0]["quantization_parameters"]
     if params["scales"] and params["zero_points"]:
-        img_resize = (img_resize / params["scales"][0] + params["zero_points"][0]).astype(np.int8)
+        img_resize = (img_resize / params["scales"][0] + params["zero_points"][0]).astype(np.uint8)
 
     interpreter.set_tensor(input_details[0]['index'], img_resize)
 
