@@ -54,10 +54,10 @@ def main():
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
     print("Type of model:", type(args.save_dir))
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
-    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
     if args.repr_data is None:
         raise Exception("repr_data must be provided to fully quantize the model")
     converter.representative_dataset = representative_dataset_generator
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
     converter.inference_input_type = tf.uint8
     converter.inference_output_type = tf.uint8
 
@@ -68,10 +68,26 @@ def main():
 def test():
     interpreter = tf.lite.Interpreter(model_path=args.out)
 
-    input_type = interpreter.get_input_details()[0]
+    input_type = interpreter.get_input_details()[0]['dtype']
     print('input: ', input_type)
     output_type = interpreter.get_output_details()[0]['dtype']
     print('output: ', output_type)
+
+    interpreter.allocate_tensors()
+    tensor_details = interpreter.get_tensor_details()
+
+    float_tensors = []
+    for tensor in tensor_details:
+        print(tensor)
+        # if tensor['dtype'] == np.int32:
+        #     float_tensors.append(tensor['name'])
+
+    # if float_tensors:
+    #     print("The model contains int32 tensors:")
+    #     for name in float_tensors:
+    #         print(name)
+    # else:
+    #     print("All tensors are quantized to int8/uint8.")
 
     interpreter.allocate_tensors()
 
@@ -103,5 +119,5 @@ def test():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
     test()
