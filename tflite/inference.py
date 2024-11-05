@@ -1,6 +1,7 @@
 import argparse
 import cv2
 import time
+import psutil
 
 from TFLiteModel import Model
 
@@ -30,8 +31,15 @@ def imageInference(imagePath, modelPath, color=(125, 255, 0)):
 
 
 def videoInference(video, modelPath, color=(125, 255, 0)):
-    fd = Model(modelPath, confThreshold=0.5)
+    process = psutil.Process()
 
+    # Measure memory before model creation
+    memory_before_model = process.memory_info().rss / (1024 ** 2)  # Convert bytes to MB
+    print(f"Memory usage before model creation: {memory_before_model:.2f} MB")
+    fd = Model(modelPath, confThreshold=0.5)
+    memory_after_model = process.memory_info().rss / (1024 ** 2)
+    print(f"Memory usage after model creation and quantization: {memory_after_model:.2f} MB")
+    print(f"Memory used by the model: {memory_after_model - memory_before_model:.2f} MB")
     cap = cv2.VideoCapture(0)
     # cap = cv2.VideoCapture(video)
 
