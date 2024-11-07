@@ -40,7 +40,7 @@ class SSD(nn.Module):
             self.config = config
             self.priors = config.priors.to(self.device)
 
-    def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def forward(self, x: torch.Tensor):
         # x = self.quant(x)
         confidences = []
         locations = []
@@ -101,7 +101,7 @@ class SSD(nn.Module):
                 locations, self.priors, self.config.center_variance, self.config.size_variance
             )
             boxes = box_utils.center_form_to_corner_form(boxes)
-            return confidences, boxes
+            return torch.cat((confidences,boxes), dim=-1)
         else:
             return confidences, locations
 
